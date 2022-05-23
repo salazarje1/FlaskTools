@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block title %}Questions{% endblock %}
+
+{%block content%}
+
+    <h1>Question {{num + 1}}</h1>
+    <form action="/response/{{num}}" method="POST">
+        <p>{{survey.questions[num].question}}</p>
+        <div>
+            <label for="question1">{{survey.questions[num].choices[0]}}</label>
+            <input type="radio" name="question" id="question1" value="{{survey.questions[num].choices[0]}}" checked>
+        </div>
+        <div>
+            <label for="question2">{{survey.questions[num].choices[1]}}</label>
+            <input type="radio" name="question" id="question2" value="{{survey.questions[num].choices[1]}}">
+        </div>
+        <button>Next Question</button>
+    </form>
+
+{% endblock %}
