@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, flash
+from flask import Flask, request, render_template, redirect, flash, session
 from flask_debugtoolbar import DebugToolbarExtension
 from surveys import surveys
 
@@ -10,35 +10,42 @@ app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
 
 debug = DebugToolbarExtension(app)
 
-responses = []
-question_list = list(range(len(surveys["satisfaction"].questions)))
+survey = surveys["satisfaction"]
 
 @app.route('/')
 def home_page():
     return render_template("home.html")
 
+@app.route('/start-survey', methods=['POST'])
+def start_survey():
+    session["responses"] = []
+    return redirect('/question/0')
+
 @app.route('/question/<int:question_num>')
 def handle_questions(question_num):
-    if not question_list: 
+    responses = session['responses']
+    print(len(survey.questions))
+    print(len(responses))
+
+    if len(responses) == len(survey.questions):
         return redirect("/thank-you")
-    elif question_num == question_list[0]:
-        survey = surveys["satisfaction"]
-        return render_template("form.html", num=question_num, survey=survey)
-    else: 
+    elif len(responses) != question_num: 
         flash("You must go in order sorry.")
-        return redirect(f'/question/{question_list[0]}')
+        return redirect(f'/question/{len(responses)}')
+    else: 
+        return render_template("form.html", survey=survey, num=len(responses))
 
 
 @app.route('/response/<int:num>', methods=["POST"])
 def handle_answer(num):
     answer = request.form["question"]
+    responses = session["responses"]
     responses.append(answer)
-    num = num + 1
-    if(num == len(surveys["satisfaction"].questions)):
-        print(responses)
+    session["responses"] = responses
+    num += 1 
+    if(len(survey.questions) == len(responses)):
         return redirect("/thank-you")
     else: 
-        question_list.pop(0)
         return redirect(f"/question/{num}")
 
 
